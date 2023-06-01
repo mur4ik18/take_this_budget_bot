@@ -18,6 +18,15 @@ class Database:
         except Error as e:
             print(e)
 
+    def check_table(self, table):
+        try:
+            cur = self.conn.cursor()
+            sql = f" SELECT * FROM {table}"
+            cur.execute(sql).fetchone()
+            return True
+        except sqlite3.OperationalError:
+            return False
+
     def create_table(self, create_table_sql):
         try:
             print("I try to create table")
@@ -26,8 +35,8 @@ class Database:
         except Error as e:
             print(f"error: {e}")
 
-    def write_payment(self, payment):
-        sql = ''' INSERT INTO payments (money, name, category, date) VALUES(?,?,?,?) '''
+    def write_payment(self, id, payment):
+        sql = f''' INSERT INTO payments{id} (money, name, category, date) VALUES(?,?,?,?) '''
         cur = self.conn.cursor()
         cur.execute(sql, payment)
         self.conn.commit()

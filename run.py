@@ -9,21 +9,26 @@ load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
 bot = telebot.TeleBot(TOKEN)
-sql_create_projects_table = """ CREATE TABLE IF NOT EXISTS payments (
-                                        id integer PRIMARY KEY,
-                                        money float,
-                                        name text NOT NULL,
-                                        category text,
-                                        date timestamp) """
-
-db = Database()
-db.create_table(sql_create_projects_table)
-db.close()
 
 
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.reply_to(message, "Hi")
+    id = get_chat_id(message)
+
+    db = Database()
+    if not db.check_table(f"payments{id}"):
+        sql_create_projects_table = f""" CREATE TABLE IF NOT EXISTS payments{id} (
+                                                id integer PRIMARY KEY,
+                                            money float,
+                                            name text NOT NULL,
+                                            category text,
+                                            date timestamp) """
+        db.create_table(sql_create_projects_table)
+        db.close()
+        bot.send_message(message.chat.id, "I was created for you database")
+    else:
+        bot.send_message(message.chat.id, "You have database")
 
 
 @bot.message_handler(commands=['help'])
@@ -133,6 +138,13 @@ def reponse_for_user(call):
                      f"Хорошо я добавл твою трату \
 \n'{user_input_message}'")
     return user_input_message
+
+
+def get_chat_id(message):
+    id = int(message.chat.id)
+    if id < 0:
+        id = "_"+str(id*(-1))
+    return id
 
 
 def get_message(message, text):

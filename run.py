@@ -57,75 +57,14 @@ def payed(message):
 def callback(call):
     if call.message:
         db = Database()
-        date = datetime.datetime.now()
-
-        if call.data == "food":
-            info = reponse_for_user(call).split(" ")
-            p = db.write_payment((
-                info[0],
-                " ".join(info[1:]),
-                "food",
-                date
-                ))
-            print(p)
-        elif call.data == "chimy":
-            info = reponse_for_user(call).split(" ")
-            p = db.write_payment((
-                info[0],
-                " ".join(info[1:]),
-                "chimy",
-                date
-                ))
-            print(p)
-        elif call.data == "nyam":
-            info = reponse_for_user(call).split(" ")
-            p = db.write_payment((
-                info[0],
-                " ".join(info[1:]),
-                "nyam",
-                date
-                ))
-            print(p)
-
-        elif call.data == "fun":
-            info = reponse_for_user(call).split(" ")
-            p = db.write_payment((
-                info[0],
-                " ".join(info[1:]),
-                "fun",
-                date
-                ))
-            print(p)
-
-        elif call.data == "investing":
-            info = reponse_for_user(call).split(" ")
-            p = db.write_payment((
-                info[0],
-                " ".join(info[1:]),
-                "investing",
-                date
-                ))
-            print(p)
-        elif call.data == "health":
-            info = reponse_for_user(call).split(" ")
-            p = db.write_payment((
-                info[0],
-                " ".join(info[1:]),
-                "health",
-                date
-                ))
-            print(p)
-        elif call.data == "everyday":
-            info = reponse_for_user(call).split(" ")
-            p = db.write_payment((
-                info[0],
-                " ".join(info[1:]),
-                "everyday",
-                date
-                ))
-            print(p)
-
-    db.close()
+        info = reponse_for_user(call).split(" ")
+        p = db.write_payment(get_chat_id(call.message), (
+            info[0],
+            " ".join(info[1:]),
+            call.data,
+            datetime.datetime.now()
+            ))
+        print(p)
 
 
 def reponse_for_user(call):

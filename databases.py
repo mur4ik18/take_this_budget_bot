@@ -32,3 +32,7 @@ class Database:
         cur.execute(sql, payment)
         self.conn.commit()
         return cur.lastrowid
+
+    def close(self):
+        self.conn.close()
+        print("Database was closed")

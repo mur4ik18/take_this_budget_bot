@@ -1,7 +1,7 @@
 import telebot
 import os
 from telebot import types
-from databases import create_connection, create_table, write_payment
+from databases import Database
 import datetime
 from dotenv import load_dotenv
 
@@ -16,10 +16,9 @@ sql_create_projects_table = """ CREATE TABLE IF NOT EXISTS payments (
                                         category text,
                                         date timestamp) """
 
-
-conn = create_connection("databases.db")
-create_table(conn, sql_create_projects_table)
-conn.close()
+db = Database()
+db.create_table(sql_create_projects_table)
+db.close()
 
 
 @bot.message_handler(commands=['start'])
@@ -52,11 +51,12 @@ def payed(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.message:
+        db = Database()
         date = datetime.datetime.now()
 
         if call.data == "food":
             info = reponse_for_user(call).split(" ")
-            p = write_payment(conn, (
+            p = db.write_payment((
                 info[0],
                 " ".join(info[1:]),
                 "food",
@@ -65,7 +65,7 @@ def callback(call):
             print(p)
         elif call.data == "chimy":
             info = reponse_for_user(call).split(" ")
-            p = write_payment(conn, (
+            p = db.write_payment((
                 info[0],
                 " ".join(info[1:]),
                 "chimy",
@@ -74,7 +74,7 @@ def callback(call):
             print(p)
         elif call.data == "nyam":
             info = reponse_for_user(call).split(" ")
-            p = write_payment(conn, (
+            p = db.write_payment((
                 info[0],
                 " ".join(info[1:]),
                 "nyam",
@@ -84,7 +84,7 @@ def callback(call):
 
         elif call.data == "fun":
             info = reponse_for_user(call).split(" ")
-            p = write_payment(conn, (
+            p = db.write_payment((
                 info[0],
                 " ".join(info[1:]),
                 "fun",
@@ -94,7 +94,7 @@ def callback(call):
 
         elif call.data == "investing":
             info = reponse_for_user(call).split(" ")
-            p = write_payment(conn, (
+            p = db.write_payment((
                 info[0],
                 " ".join(info[1:]),
                 "investing",
@@ -103,7 +103,7 @@ def callback(call):
             print(p)
         elif call.data == "health":
             info = reponse_for_user(call).split(" ")
-            p = write_payment(conn, (
+            p = db.write_payment((
                 info[0],
                 " ".join(info[1:]),
                 "health",
@@ -112,13 +112,15 @@ def callback(call):
             print(p)
         elif call.data == "everyday":
             info = reponse_for_user(call).split(" ")
-            p = write_payment(conn, (
+            p = db.write_payment((
                 info[0],
                 " ".join(info[1:]),
                 "everyday",
                 date
                 ))
             print(p)
+
+    db.close()
 
 
 def reponse_for_user(call):

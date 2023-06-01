@@ -42,6 +42,12 @@ class Database:
         self.conn.commit()
         return cur.lastrowid
 
+    def return_last_payments(self, id, period):
+        sql = f" SELECT * FROM payments{id} ORDER BY -id LIMIT {period}"
+        cur = self.conn.cursor()
+        reponse = cur.execute(sql).fetchall()
+        return reponse
+
     def close(self):
         self.conn.close()
         print("Database was closed")

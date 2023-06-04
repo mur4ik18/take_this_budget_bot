@@ -17,9 +17,11 @@ def start(message):
     id = get_chat_id(message)
 
     db = Database()
+    # if user have not a database with payments we will create
     if not db.check_table(f"payments{id}"):
-        sql_create_projects_table = f""" CREATE TABLE IF NOT EXISTS payments{id} (
-                                                id integer PRIMARY KEY,
+        sql_create_projects_table = f""" CREATE TABLE IF NOT EXISTS
+                                            payments{id} (
+                                            id integer PRIMARY KEY,
                                             money float,
                                             name text NOT NULL,
                                             category text,
@@ -37,7 +39,11 @@ def help(message):
 
 
 @bot.message_handler(commands=['last_10'])
-def last_10(message):
+def give_last_10(message):
+    """
+        This function give a list with last 10 payments
+        what you are added
+    """
     db = Database()
     id = get_chat_id(message)
     if not db.check_table(f"payments{id}"):
@@ -69,14 +75,22 @@ def payed(message):
                                            callback_data='everyday')
         markup.add(item0, item, item1, item2, item3, item4, item5)
 
-        bot.reply_to(message, "За что ты заплатил(а)", reply_markup=markup)
+        bot.reply_to(message, "How mutch you spend?", reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.message:
         db = Database()
-        info = reponse_for_user(call).split(" ")
+        bot.send_message(
+                call.message.chat.id,
+                "Сколько денег и на что именно ты потратил(а)?")
+        a = get_message(call.message, "message")
+        user_input_message = str(a).split("/")[-1]
+        bot.send_message(call.message.chat.id,
+                         f"Хорошо я добавл твою трату \
+    \n'{user_input_message}'")
+        info = user_input_message.split(" ")
         p = db.write_payment(get_chat_id(call.message), (
             info[0],
             " ".join(info[1:]),
@@ -84,18 +98,6 @@ def callback(call):
             datetime.datetime.now()
             ))
         print(p)
-
-
-def reponse_for_user(call):
-    bot.send_message(
-            call.message.chat.id,
-            "Сколько денег и на что именно ты потратил(а)?")
-    a = get_message(call.message, "message")
-    user_input_message = str(a).split("/")[-1]
-    bot.send_message(call.message.chat.id,
-                     f"Хорошо я добавл твою трату \
-\n'{user_input_message}'")
-    return user_input_message
 
 
 def get_chat_id(message):
@@ -106,6 +108,9 @@ def get_chat_id(message):
 
 
 def get_message(message, text):
+    """
+        get a message what an user will write
+    """
     a = []
 
     def ret(message):

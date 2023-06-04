@@ -3,6 +3,9 @@ from sqlite3 import Error
 
 
 class Database:
+    """
+        Class for working with sqlite database
+    """
 
     def __init__(self, db_file: str = None):
         if db_file is None:
@@ -19,6 +22,7 @@ class Database:
             print(e)
 
     def check_table(self, table):
+        """ check if a table exist -> if not return False else True"""
         try:
             cur = self.conn.cursor()
             sql = f" SELECT * FROM {table}"
@@ -28,21 +32,34 @@ class Database:
             return False
 
     def create_table(self, create_table_sql):
+        """ create a table in database """
         try:
             print("I try to create table")
             c = self.conn.cursor()
             c.execute(create_table_sql)
+            print("Table was created")
         except Error as e:
             print(f"error: {e}")
 
     def write_payment(self, id, payment):
-        sql = f''' INSERT INTO payments{id} (money, name, category, date) VALUES(?,?,?,?) '''
+        """ write new payments in table payments(chat_id) """
+        sql = f''' INSERT INTO payments{id} (money, name, category, date)
+        VALUES(?,?,?,?) '''
         cur = self.conn.cursor()
         cur.execute(sql, payment)
-        self.conn.commit()
+        cur.commit()
+        return cur.lastrowid
+
+    def write_new_category(self, id, name):
+        """ write new payments in a categories table """
+        sql = f""" INSERT INTO categories{id} (category) VALUES(?))"""
+        cur = self.conn.cursor()
+        cur.execute(sql, name)
+        cur.commit()
         return cur.lastrowid
 
     def return_last_payments(self, id, period):
+        """ return last payments like list """
         sql = f" SELECT * FROM payments{id} ORDER BY -id LIMIT {period}"
         cur = self.conn.cursor()
         reponse = cur.execute(sql).fetchall()

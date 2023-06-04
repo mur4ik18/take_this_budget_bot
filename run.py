@@ -73,6 +73,7 @@ def add_categories(message):
     user_message = get_message(message, "message")
 
 
+
 @bot.message_handler(commands=['payed'])
 def payed(message):
     db = Database()

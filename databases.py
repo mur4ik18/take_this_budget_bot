@@ -47,7 +47,15 @@ class Database:
         VALUES(?,?,?,?) '''
         cur = self.conn.cursor()
         cur.execute(sql, payment)
-        self.conn.commit()
+        cur.commit()
+        return cur.lastrowid
+
+    def write_new_category(self, id, name):
+        """ write new payments in a categories table """
+        sql = f""" INSERT INTO categories{id} (category) VALUES(?))"""
+        cur = self.conn.cursor()
+        cur.execute(sql, name)
+        cur.commit()
         return cur.lastrowid
 
     def return_last_payments(self, id, period):

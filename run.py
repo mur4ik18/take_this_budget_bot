@@ -29,8 +29,16 @@ def start(message):
         db.create_table(sql_create_projects_table)
         db.close()
         bot.send_message(message.chat.id, "I was created for you database")
-    else:
-        bot.send_message(message.chat.id, "You have database")
+    # if user have not a database with categories we will create
+    if not db.check_table(f"categories{id}"):
+        sql_create_projects_table = f""" CREATE TABLE IF NOT EXISTS
+                                            categories{id} (
+                                            id integer PRIMARY KEY,
+                                            category text) """
+        db.create_table(sql_create_projects_table)
+        bot.send_message(message.chat.id, "I was created for you database")
+    bot.send_message(message.chat.id, "Now you can add yours categories\n\
+            you can use a command /add_categories")
 
 
 @bot.message_handler(commands=['help'])
@@ -54,6 +62,15 @@ def give_last_10(message):
     for i in last:
         reponse += f"{i[4].split(' ')[0]} - {i[3]} - {i[1]} - {i[2]}\n"
     bot.reply_to(message, reponse)
+
+
+@bot.message_handler(commands=['add_categories'])
+def add_categories(message):
+    """
+        This function add new category in this chat table
+    """
+    bot.send_message(message.chat.id, "You can write category name")
+    user_message = get_message(message, "message")
 
 
 @bot.message_handler(commands=['payed'])

@@ -47,16 +47,35 @@ class Database:
         VALUES(?,?,?,?) '''
         cur = self.conn.cursor()
         cur.execute(sql, payment)
-        cur.commit()
+        self.conn.commit()
         return cur.lastrowid
 
-    def write_new_category(self, id, name):
-        """ write new payments in a categories table """
-        sql = f""" INSERT INTO categories{id} (category) VALUES(?))"""
+    def _exist_row_or_not(self, sql) -> bool:
+        """
+            method which will check if row with field = * exist
+            for dont create dublicates
+
+            If exist will return True
+        """
         cur = self.conn.cursor()
-        cur.execute(sql, name)
-        cur.commit()
-        return cur.lastrowid
+        reponse = cur.execute(sql)
+        self.conn.commit()
+        print(reponse.fetchone())
+        if reponse.fetchone() is None:
+            return False
+        else:
+            return True
+
+    def write_new_category(self, id, name) -> bool:
+        """ write new payments in a categories table """
+        sql = f""" INSERT INTO categories{id} (category) VALUES(?) """
+        cur = self.conn.cursor()
+        # SQLite wait tuple but name is str so i add name in tuple
+        if self._exist_row_or_not(f" SELECT * FROM categories{id} where category='{name}' "):
+            return False
+        cur.execute(sql, (name,))
+        self.conn.commit()
+        return True
 
     def return_last_payments(self, id, period):
         """ return last payments like list """

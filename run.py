@@ -71,6 +71,32 @@ def add_categories(message):
     """
     bot.send_message(message.chat.id, "You can write category name")
     user_message = get_message(message, "message")
+    db = Database()
+    id = get_chat_id(message)
+    if not db.check_table(f"categories{id}"):
+        bot.reply_ty(user_message, "Use /start for create your own db")
+        return
+    if db.write_new_category(id, user_message):
+        bot.send_message(message.chat.id, "We are added new category")
+    else:
+        bot.send_message(message.chat.id, "Category with this name exist!\n\
+You can use /categories for show the list of the categories")
+
+
+@bot.message_handler(commands=['categories'])
+def categories(messages):
+    """
+        Show list of categories
+    """
+    bot.send_message()
+
+
+@bot.message_handler(commands=['delete_categories'])
+def delete_categories(messages):
+    """
+        delete category
+        Here user can click on button for choise
+    """
 
 
 @bot.message_handler(commands=['payed'])

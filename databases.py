@@ -77,6 +77,23 @@ class Database:
         self.conn.commit()
         return True
 
+    def get_categories(self, id) -> tuple:
+        """ return all categories """
+        sql = f""" SELECT * FROM categories{id}"""
+        cur = self.conn.cursor()
+        cur.execute(sql)
+        return cur.fetchall()
+
+    def delete_categories(self, id, name):
+        """ delete category and return bool """
+        sql = f" DELETE FROM categories{id} WHERE category='{name}' ;"
+        if not self._exist_row_or_not(f" SELECT * FROM categories{id} where category='{name}' "):
+            cur = self.conn.cursor()
+            cur.execute(sql)
+            self.conn.commit()
+            print(cur)
+        print(self.get_categories(id))
+
     def return_last_payments(self, id, period):
         """ return last payments like list """
         sql = f" SELECT * FROM payments{id} ORDER BY -id LIMIT {period}"

@@ -84,63 +84,93 @@ You can use /categories for show the list of the categories")
 
 
 @bot.message_handler(commands=['categories'])
-def categories(messages):
+def categories(message):
     """
         Show list of categories
     """
-    bot.send_message()
+    db = Database()
+    id = get_chat_id(message)
+    if not db.check_table(f"payments{id}") or not db.check_table(f"categories{id}"):
+        bot.reply_to(message, "Use /start for create your own db")
+    else:
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        categories = db.get_categories(id)
+        for i in categories:
+            item = types.InlineKeyboardButton(i[-1], callback_data='categories')
+            markup.add(item)
+
+        bot.reply_to(message, "Your categories:", reply_markup=markup)
 
 
-@bot.message_handler(commands=['delete_categories'])
-def delete_categories(messages):
+@bot.message_handler(commands=['delete_category'])
+def delete_categories(message):
     """
         delete category
         Here user can click on button for choise
     """
+    db = Database()
+    id = get_chat_id(message)
+    if not db.check_table(f"payments{id}") or not db.check_table(f"categories{id}"):
+        bot.reply_to(message, "Use /start for create your own db")
+    else:
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        categories = db.get_categories(id)
+        for i in categories:
+            item = types.InlineKeyboardButton(i[-1], callback_data=f'delete_{i[-1]}')
+            markup.add(item)
+
+        bot.reply_to(message, "Your categories:", reply_markup=markup)
 
 
 @bot.message_handler(commands=['payed'])
 def payed(message):
     db = Database()
     id = get_chat_id(message)
-    if not db.check_table(f"payments{id}"):
+    if not db.check_table(f"payments{id}") or not db.check_table(f"categories{id}"):
         bot.reply_to(message, "Use /start for create your own db")
     else:
         markup = types.InlineKeyboardMarkup(row_width=2)
+        categories = db.get_categories(id)
+        for i in categories:
+            item = types.InlineKeyboardButton(i[-1], callback_data=i[-1])
+            markup.add(item)
 
-        item0 = types.InlineKeyboardButton("Еда", callback_data='food')
-        item = types.InlineKeyboardButton("Химия", callback_data='chimy')
-        item1 = types.InlineKeyboardButton("Хотелки", callback_data='nyam')
-        item2 = types.InlineKeyboardButton("Развлечения", callback_data='fun')
-        item3 = types.InlineKeyboardButton("Инвестиции", callback_data='investing')
-        item4 = types.InlineKeyboardButton("Медицина", callback_data='health')
-        item5 = types.InlineKeyboardButton("Повседневное",
-                                           callback_data='everyday')
-        markup.add(item0, item, item1, item2, item3, item4, item5)
-
-        bot.reply_to(message, "How mutch you spend?", reply_markup=markup)
+        bot.reply_to(message, "Choise category please", reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     if call.message:
-        db = Database()
-        bot.send_message(
-                call.message.chat.id,
-                "Сколько денег и на что именно ты потратил(а)?")
-        a = get_message(call.message, "message")
-        user_input_message = str(a).split("/")[-1]
-        bot.send_message(call.message.chat.id,
-                         f"Хорошо я добавл твою трату \
-    \n'{user_input_message}'")
-        info = user_input_message.split(" ")
-        p = db.write_payment(get_chat_id(call.message), (
-            info[0],
-            " ".join(info[1:]),
-            call.data,
-            datetime.datetime.now()
-            ))
-        print(p)
+        # after "/categories" we shuldnt verifier
+        if call.data == "categories":
+            print(call.data[:5])
+        # if we want delete categories
+        elif call.data[:6] == "delete":
+            category = call.data[7:]
+            print(category)
+            db = Database()
+            id = get_chat_id(call.message)
+            db.delete_categories(id, category)
+            bot.send_message(call.message.chat.id, f"I was deleted  your category with name - {category}")
+        # if we add new payment
+        else:
+            db = Database()
+            bot.send_message(
+                    call.message.chat.id,
+                    "Сколько денег и на что именно ты потратил(а)?")
+            a = get_message(call.message, "message")
+            user_input_message = str(a).split("/")[-1]
+            bot.send_message(call.message.chat.id,
+                             f"Хорошо я добавл твою трату \
+        \n'{user_input_message}'")
+            info = user_input_message.split(" ")
+            p = db.write_payment(get_chat_id(call.message), (
+                info[0],
+                " ".join(info[1:]),
+                call.data,
+                datetime.datetime.now()
+                ))
+            print(p)
 
 
 def get_chat_id(message):

@@ -27,7 +27,6 @@ def start(message):
                                             category text,
                                             date timestamp) """
         db.create_table(sql_create_projects_table)
-        db.close()
         bot.send_message(message.chat.id, "I was created for you database")
     # if user have not a database with categories we will create
     if not db.check_table(f"categories{id}"):
@@ -37,6 +36,8 @@ def start(message):
                                             category text) """
         db.create_table(sql_create_projects_table)
         bot.send_message(message.chat.id, "I was created for you database")
+
+    db.close()
     bot.send_message(message.chat.id, "Now you can add yours categories\n\
             you can use a command /add_categories")
 

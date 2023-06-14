@@ -4,6 +4,7 @@ from telebot import types
 from databases import Database
 import datetime
 from dotenv import load_dotenv
+from excel import Excel
 
 load_dotenv()
 
@@ -121,6 +122,28 @@ def delete_categories(message):
             markup.add(item)
 
         bot.reply_to(message, "Your categories:", reply_markup=markup)
+
+
+@bot.message_handler(commands=['this_month'])
+def this_month_payments(message):
+    db = Database()
+    id = get_chat_id(message)
+    if not db.check_table(f"payments{id}") or not db.check_table(f"categories{id}"):
+        bot.reply_to(message, "Use /start for create your own db")
+    else:
+        month = datetime.datetime.now().month
+        if month < 10:
+            month = "0" + str(month)
+        sql = f" SELECT * FROM payments{id} WHERE strftime('%m', date)= '{month}'; "
+        e = Excel()
+        data = db.return_result(sql)
+        for row in data:
+            e.write_data(list(row))
+        e.save(f"payments{id}_{month}")
+        bot.send_document(message.chat.id,
+            document=open(f"payments{id}_{month}.xlsx", "rb"),
+            visible_file_name=f"Your_payments_for_{month}.xlsx",)
+        os.remove(f"payments{id}_{month}.xlsx")
 
 
 @bot.message_handler(commands=['payed'])

@@ -21,7 +21,7 @@ class Database:
         except Error as e:
             print(e)
 
-    def check_table(self, table):
+    def check_table(self, table) -> bool:
         """ check if a table exist -> if not return False else True"""
         try:
             cur = self.conn.cursor()
@@ -41,7 +41,7 @@ class Database:
         except Error as e:
             print(f"error: {e}")
 
-    def write_payment(self, id, payment):
+    def write_payment(self, id, payment) -> int:
         """ write new payments in table payments(chat_id) """
         sql = f''' INSERT INTO payments{id} (money, name, category, date)
         VALUES(?,?,?,?) '''
@@ -94,12 +94,17 @@ class Database:
             print(cur)
         print(self.get_categories(id))
 
-    def return_last_payments(self, id, period):
+    def return_last_payments(self, id, period) -> tuple:
         """ return last payments like list """
         sql = f" SELECT * FROM payments{id} ORDER BY -id LIMIT {period}"
         cur = self.conn.cursor()
         reponse = cur.execute(sql).fetchall()
         return reponse
+
+    def return_result(self, sql) -> tuple:
+        """ return resultate after doing sql request what you give """
+        cur = self.conn.cursor()
+        return cur.execute(sql).fetchall()
 
     def close(self):
         self.conn.close()
